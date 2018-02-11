@@ -1,0 +1,24 @@
+Source = LOAD '/data/weather' USING PigStorage('\t') AS 
+(year:chararray, month:chararray, maxtemp:float, mintemp:float, frost:int, rainfall:float, sunshine:float);
+
+
+Data = FILTER Source BY maxtemp IS NOT NULL AND mintemp IS NOT NULL;
+Readings = FILTER Data By year != 'yyyy';
+
+YearGroups = GROUP Readings BY year;
+AggTemps = FOREACH YearGroups GENERATE group AS year, AVG(Readings.maxtemp) AS avghigh, AVG(Readings.mintemp) AS avglow;
+
+SortedResults = ORDER AggTemps BY year;
+DUMP SortedResults;
+
+
+Go through the scrub_weather.pig file to check how the data can be cleaned and saved.
+Upload the file to /data folder on hdfs.
+
+Run this script using
+pig wasb:///data/scrub_weather.pig
+
+Check the output created at
+hdfs dfs -ls /data/scrubbedweather
+hfds dfs -text /data/scrubbedweather/part-r-00000
+
